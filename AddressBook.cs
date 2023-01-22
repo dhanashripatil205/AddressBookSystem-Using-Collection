@@ -115,6 +115,7 @@ namespace CollectionAddressBook
             else
             {
                 Console.WriteLine("Enter the valid name!");
+            }
         }
     }
 }
