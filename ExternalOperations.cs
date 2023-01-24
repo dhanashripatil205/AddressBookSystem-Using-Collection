@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
+using CsvHelper;
+using System.Globalization;
 
 namespace CollectionAddressBook
 {
@@ -11,6 +14,7 @@ namespace CollectionAddressBook
         public string FileName;
         public string Path;
         public Dictionary<string, string[]> Book;
+        Person record;
         public ExternalOperations(string FileName, Dictionary<string, string[]> Book)
         {
             this.FileName = FileName;
@@ -22,6 +26,16 @@ namespace CollectionAddressBook
             if (!File.Exists(FilePath))
                 return false;
             return true;
+        }
+
+        public void DeleteFile(string FilePath)
+        {
+            if (FileExists(FilePath))
+            {
+                File.Delete(FilePath);
+                return;
+            }
+            Console.WriteLine("No such file exist already.");
         }
         public void TxtHandler()
         {
@@ -44,7 +58,7 @@ namespace CollectionAddressBook
                         ReadTxt(FilePath);
                         break;
                     case 3:
-                        DeleteTxt(FilePath);
+                        DeleteFile(FilePath);
                         break;
                     default:
                         break;
@@ -62,7 +76,7 @@ namespace CollectionAddressBook
         public void WriteTxt(string FilePath)
         {
             if (FileExists(FilePath))
-                DeleteTxt(FilePath);
+                DeleteFile(FilePath);
 
             StreamWriter sw = new(FilePath);
             foreach (string[] array in Book.Values)
@@ -83,14 +97,68 @@ namespace CollectionAddressBook
                 Console.WriteLine(line);
             sr.Close();
         }
-        public void DeleteTxt(string FilePath)
+
+        public void CSVHandler()
         {
-            if (FileExists(FilePath))
+            int Option = 0;
+            do
             {
-                File.Delete(FilePath);
+                string FilePath = Path + FileName + ".csv";
+                Console.WriteLine("\n1 to Write to a .csv file for {0} Address Book", FileName);
+                Console.WriteLine("2 to Read from a .csv file of {0} Address Book", FileName);
+                Console.WriteLine("3 to Delete the .csv file for {0} Address Book", FileName);
+                Console.WriteLine("0 to EXIT");
+                Console.Write("Choose an action: ");
+                Option = Convert.ToInt32(Console.ReadLine());
+                switch (Option)
+                {
+                    case 1:
+                        WriteCSV(FilePath);
+                        break;
+                    case 2:
+                        ReadCSV(FilePath);
+                        break;
+                    case 3:
+                        DeleteFile(FilePath);
+                        break;
+                    default:
+                        break;
+                }
+            } while (Option != 0);
+        }
+
+        public void WriteCSV(string FilePath)
+        {
+            DeleteFile(FilePath);
+
+            StreamWriter sw = new(FilePath);
+            foreach (string[] array in Book.Values)
+            {
+                sw.WriteLine("{0},{1},{2},{3},{4},{5},{6},{7}", array[0], array[1], array[2], array[3], array[4], array[5], array[6], array[7]);
+            }
+            sw.Close();
+        }
+        public void ReadCSV(string FilePath)
+        {
+            if (!FileExists(FilePath))
+            {
+                Console.WriteLine("This file does not exist.");
                 return;
             }
-            Console.WriteLine("No such file exist already.");
+
+            StreamReader sr = new(FilePath);
+            string[] data = new string[8];
+            string line;
+            while ((line = sr.ReadLine()) != null)
+            {
+                data = line.Split(',');
+                record = new Person(
+                    data[0], data[1],
+                    data[2], data[3],
+                    data[4], data[5],
+                    data[6], data[7]);
+            }
+            sr.Close();
         }
     }
 }
